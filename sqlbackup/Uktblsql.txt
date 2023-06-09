@@ -1,0 +1,82 @@
+use balasdb;
+drop table if exists uktbl 
+go
+create table uktbl
+(
+rno int identity(1001,1),
+sname varchar(10),
+Constraint cnsunisn unique(sname)
+)
+go
+select * from uktbl
+go
+
+OP:
+rno	sname
+
+Input:
+insert into uktbl
+(sname)
+values
+('Bala'),
+('Vicky'),
+('Suthakar')
+select * from uktbl
+go
+
+OP:
+rno	sname
+1001	Bala
+1002	Vicky
+1003	Suthakar
+
+Input:
+insert into uktbl
+values
+('Bala')
+go
+
+insert into uktbl
+values
+('Ajith')
+go
+insert into uktbl
+values
+(null)
+go
+select * from uktbl
+go
+
+OP:
+rno	sname
+1001	Bala
+1002	Vicky
+1003	Suthakar
+1005	Ajith
+1006	NULL
+
+Conclusion:
+insert into uktbl
+values
+('Bala')
+go
+Msg 2627, Level 14, State 1, Line 21
+Violation of UNIQUE KEY constraint 'cnsunisn'. Cannot insert duplicate key in object 'dbo.uktbl'. The duplicate key value is (Bala).
+The statement has been terminated.
+
+Input:
+insert into uktbl
+values
+('')
+go
+select * from uktbl
+go
+
+OP:
+rno	sname
+1001	Bala
+1002	Vicky
+1003	Suthakar
+1005	Ajith
+1006	NULL
+1007	

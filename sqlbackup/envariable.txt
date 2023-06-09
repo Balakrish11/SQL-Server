@@ -1,0 +1,20 @@
+use balasdb;
+set noexec off
+print dbo.udfdiv(20,3)
+go
+select dbo.udfdiv(20,7) divide
+go
+
+set noexec on
+print dbo.udfdiv(10,3)
+go
+select dbo.udfdiv(10,8) divide
+go
+
+Output:
+divide
+2.85714285714286
+
+6.66667
+
+(1 row(s) affected)

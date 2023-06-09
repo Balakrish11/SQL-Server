@@ -1,0 +1,60 @@
+use balasdb;
+drop table if exists sitbl
+go
+create table sitbl
+(
+rno int identity(1001,1),
+sname varchar(2)
+)
+go
+select * from sitbl
+go
+insert into sitbl
+(sname)
+values
+('x5'),
+('x3')
+select * from sitbl
+go
+
+--OP:
+rno	sname
+
+rno	sname
+1001	x5
+1002	x3
+--Input:
+delete from sitbl
+where rno=1001;
+select * from sitbl
+go
+
+/*
+OP:
+rno	sname
+1002	x3
+*/
+
+drop trigger if exists trgdel_sitbl
+go
+create trigger trgdel_sitbl
+on sitbl
+for delete
+as 
+begin
+raiserror('denied: delete operation',1,1)
+rollback transaction
+end
+go
+
+delete from sitbl
+where rno=1002;
+go
+select * from sitbl
+go
+
+/*
+Output:
+rno	sname
+1002	x3
+*/

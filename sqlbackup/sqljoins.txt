@@ -1,0 +1,339 @@
+use balasdb;
+drop table if exists atbl
+go
+drop table if exists btbl
+go
+create table atbl
+(
+dname varchar(15) not null,
+dtype varchar(5)not null
+)
+go
+create table btbl
+(
+dname varchar(50) not null,
+dprice numeric(5,2)not null
+)
+go
+insert into atbl
+(dname,dtype)
+values
+('coffee','hot'),
+('tea','hot'),
+('7up','cool'),
+('pepsi','cool'),
+('grap','soft'),
+('Mango juice','soft')
+go
+
+insert into btbl
+(dname,dprice)
+values
+('milk',90),
+('tea',80),
+('7up',70),
+('coke',60),
+('apple juice',50),
+('Mango juice',40)
+go
+
+select * from atbl
+go
+select * from btbl
+go
+/*
+output:
+dname	dtype
+coffee	hot
+tea	hot
+7up	cool
+pepsi	cool
+grap	soft
+Mango juice	soft
+
+
+dname	dprice
+milk	90.00
+tea	80.00
+7up	70.00
+coke	60.00
+apple juice	50.00
+Mango juice	40.00
+*/
+
+//Inner join
+select
+a.dname,dtype,dprice
+from atbl a,btbl b
+where a.dname =b.dname
+
+select
+a.dname,dtype,dprice
+from 
+atbl a
+inner join
+btbl b
+on a.dname =b.dname
+go
+
+/*
+Output:
+dname	dtype	dprice
+tea	hot	80.00
+7up	cool	70.00
+Mango juice	soft	40.00
+
+
+dname	dtype	dprice
+tea	hot	80.00
+7up	cool	70.00
+Mango juice	soft	40.00
+*/
+
+//Left Join
+select
+a.dname,dtype,dprice
+from
+atbl a
+left join
+btbl b
+on a.dname=b.dname
+go
+
+/*
+OutPut:
+dname	dtype	dprice
+coffee	hot	NULL
+tea	hot	80.00
+7up	cool	70.00
+pepsi	cool	NULL
+grap	soft	NULL
+Mango juice	soft	40.00
+*/
+
+//Right Join
+select
+a.dname,dtype,dprice
+from
+atbl a
+right join
+btbl b
+on a.dname=b.dname
+go
+/*
+Output:
+dname	dtype	dprice
+NULL	NULL	90.00
+tea	hot	80.00
+7up	cool	70.00
+NULL	NULL	60.00
+NULL	NULL	50.00
+Mango juice	soft	40.00
+*/
+
+
+//Full Join
+select
+a.dname,dtype,dprice
+from
+atbl a
+full join
+btbl b
+on a.dname=b.dname
+go
+
+/*
+Output:
+dname	dtype	dprice
+coffee	hot	NULL
+tea	hot	80.00
+7up	cool	70.00
+pepsi	cool	NULL
+grap	soft	NULL
+Mango juice	soft	40.00
+NULL	NULL	90.00
+NULL	NULL	60.00
+NULL	NULL	50.00
+*/
+
+//Full outer Join
+select
+isnull (a.dname,b.dname),dtype,dprice
+from
+atbl a
+full join
+btbl b
+on a.dname=b.dname
+where (dtype is null) or (dprice is null)
+go
+
+/*
+Output:
+(No column name)	dtype	dprice
+coffee	hot	NULL
+pepsi	cool	NULL
+grap	soft	NULL
+milk	NULL	90.00
+coke	NULL	60.00
+apple juice	NULL	50.00
+*/
+
+//Left Outer Join
+select
+ a.dname,dtype,dprice
+from
+atbl a
+full join
+btbl b
+on a.dname=b.dname
+where dtype is not null
+go
+
+/*
+OP:
+dname	dtype	dprice
+coffee	hot	NULL
+tea	hot	80.00
+7up	cool	70.00
+pepsi	cool	NULL
+grap	soft	NULL
+Mango juice	soft	40.00
+*/
+
+//Right outer join
+select
+ a.dname,dtype,dprice
+from
+atbl a
+full join
+btbl b
+on a.dname=b.dname
+where dtype is  null
+go
+
+
+/*
+OP:
+dname	dtype	dprice
+NULL	NULL	90.00
+NULL	NULL	60.00
+NULL	NULL	50.00
+*/
+
+//Cross Join
+select * from atbl
+go
+select * from btbl
+go
+select * from atbl,btbl
+go
+
+/*
+OP:
+dname	dtype
+coffee	hot
+tea	hot
+7up	cool
+pepsi	cool
+grap	soft
+Mango juice	soft
+
+
+dname	dprice
+milk	90.00
+tea	80.00
+7up	70.00
+coke	60.00
+apple juice	50.00
+Mango juice	40.00
+
+
+dname	dtype	dname	dprice
+coffee	hot	milk	90.00
+tea	hot	milk	90.00
+7up	cool	milk	90.00
+pepsi	cool	milk	90.00
+grap	soft	milk	90.00
+Mango juice	soft	milk	90.00
+coffee	hot	tea	80.00
+tea	hot	tea	80.00
+7up	cool	tea	80.00
+pepsi	cool	tea	80.00
+grap	soft	tea	80.00
+Mango juice	soft	tea	80.00
+coffee	hot	7up	70.00
+tea	hot	7up	70.00
+7up	cool	7up	70.00
+pepsi	cool	7up	70.00
+grap	soft	7up	70.00
+Mango juice	soft	7up	70.00
+*/
+
+//Self Join
+use balasdb;
+drop table if exists ctbl
+go
+create table ctbl
+(
+rno int,
+tid int,
+sname varchar(10),
+constraint chktid check (rno<>tid)
+)
+go
+
+insert into ctbl
+(rno,sname)
+values
+(1001,'X5'),
+(1002,'X3')
+go
+
+
+insert into ctbl
+values
+(100,1001,'x1'),
+(1004,null,'X2'),
+(1005,1003,'x1')
+go
+
+select * from ctbl
+go
+
+/*
+OP:
+rno	tid	sname
+1001	NULL	X5
+1002	NULL	X3
+100	1001	x1
+1004	NULL	X2
+1005	1003	x1
+*/
+select 
+rno,sname,tid
+from ctbl
+where rno > tid
+go
+
+select rno,sname,t.tid,tname
+from
+ctbl c
+full join
+(
+select rno 'tid',sname 'tname'
+from ctbl c
+where rno in (select tid from ctbl)
+)t
+on c.tid=t.tid
+where c.tid is not null
+go
+
+/*
+OP:
+rno	sname	tid
+1005	x1	1003
+
+rno	sname	tid	tname
+100	x1	1001	X5
+1005	x1	NULL	NULL
+*/

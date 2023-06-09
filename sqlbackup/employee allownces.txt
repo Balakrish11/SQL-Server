@@ -1,0 +1,39 @@
+use balasdb;
+drop table if exists eatbl;
+create table eatbl
+(
+eid int identity(1001,1)not null,
+ename varchar(15) not null,
+esal numeric(10) not null, check (esal>0 and esal<=2000000),
+hra as (esal*20.0/100),
+da as (esal*15.0/100),
+pf as (esal*35.0/100),
+gpay as (esal+(esal*20.0/100)+(esal*15.0/100)),
+npay as ((esal+(esal*20.0/100)+(esal*15.0/100))-(esal*35.0/100)),
+
+)
+go
+
+insert into eatbl
+(ename,esal)
+values
+('milton', 60000);
+
+insert into eatbl
+(ename,esal)
+values
+('aravind',50000)
+
+insert into eatbl
+(ename,esal)
+values
+('suthakar',70000)
+
+input:
+select * from eatbl;
+
+Output:
+eid  ename     esal   hra	   da     	 pf	     gpay         npay
+1001 milton    60000  12000.000000 9000.000000  21000.000000 81000.000000 60000.000000
+1002 aravind   50000  10000.000000 7500.000000  17500.000000 67500.000000 50000.000000
+1003 suthakar  70000  14000.000000 10500.000000 24500.000000 94500.000000 70000.000000

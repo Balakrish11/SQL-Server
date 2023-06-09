@@ -1,0 +1,14 @@
+use balasdb;
+drop procedure if exists udpdiv
+go
+create procedure udpdiv(@i float ,@j float)
+as
+begin 
+print @i / @j;
+end
+go
+exec udpdiv 10,3
+
+Output:
+
+3.33333

@@ -1,0 +1,62 @@
+use balasdb;
+drop table if exists ptbl
+go
+create table ptbl
+(
+rno int identity (1001,1),
+sname varchar(2) not null,
+m1 decimal(5,2)not  null,
+m2 decimal(5,2)not  null,
+)
+go
+
+insert into ptbl
+(sname,m1,m2)
+values
+('x5',36.5,43),
+('x3',52,45.5)
+go
+select * from ptbl
+go
+
+Output:
+rno	sname	m1	m2
+1001	x5	36.50	43.00
+1002	x3	52.00	45.50
+
+
+select * into #ttbl from ptbl
+select * from #ttbl
+go
+select
+rno,
+(m1+m2) 'total',
+(m1+m2)/2 'average',
+iif (m1> 34.4 and m2 >34.4 , 'Pass','Fail') 'Result'
+from ptbl
+go
+
+select * from #ttbl
+go
+
+rno	total	average	Result
+1001	79.50	39.750000	Pass
+1002	97.50	48.750000	Pass
+
+drop table if exists #ttbl
+go
+
+select
+rno,
+(m1+m2) 'total',
+(m1+m2)/2 'average',
+iif (m1> 34.4 and m2 >34.4 , 'Pass','Fail') 'Result'
+into #ttbl
+from ptbl
+go
+
+select * from #ttbl
+go
+rno	total	average	Result
+1001	79.50	39.750000	Pass
+1002	97.50	48.750000	Pass

@@ -1,0 +1,36 @@
+use balasdb;
+drop table if exists sttbl
+go
+create table sttbl
+(
+eid int identity(1001,1) primary key not null,
+ename varchar(5),
+esal numeric (11,2) not null check (esal >=0),
+tax10 as (iif(esal < 250000,0,(iif(esal > 250000,25000,(esal-250000)*0.1)))),
+tax20 as (iif(esal < 500000,0,(iif(esal > 500000,100000,(esal-500000)*0.2)))),
+tax30 as (iif (esal < 1000000,0,(esal - 1000000)*0.3)),
+
+taxtot as((iif(esal < 250000,0,(iif(esal > 250000,25000,(esal-250000)*0.1)))) +
+(iif(esal < 500000,0,(iif(esal > 500000,100000,(esal-500000)*0.2))))+
+(iif (esal < 1000000,0,(esal - 1000000)*0.3))
+),
+
+npay as(esal -(iif(esal < 250000,0,(iif(esal > 250000,25000,(esal-250000)*0.1)))) +
+(iif(esal < 500000,0,(iif(esal > 500000,100000,(esal-500000)*0.2))))+
+(iif (esal < 1000000,0,(esal - 1000000)*0.3))
+
+)
+)
+go
+insert into sttbl
+(ename,esal)
+values
+('x5',200000),
+('x3',400000),
+('x2',600000),
+('x4',800000),
+('x1',1000000)
+go
+
+select * from sttbl
+go

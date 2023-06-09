@@ -1,0 +1,6 @@
+select 9 -1;
+select 8 - 2 'minus';
+
+select 7-3 as subtract;
+
+select 6 -4 deduct;

@@ -1,0 +1,286 @@
+use master
+go
+ 
+use master
+go
+ 
+drop database if exists cmrdb3
+go
+
+create database cmrdb3
+on
+(
+name='cmrdb3',
+filename='c:\bala\class\sqlserver\dbscmrdb3.mdf'
+)
+
+go
+
+use cmrdb3;
+
+drop table if exists ebctbl
+go
+
+drop table if exists ebptbl
+go
+
+create table ebptbl
+(
+ccid int identity(1,1),
+ccname varchar(11) primary key not null
+check (lower(ccname) in ('agriculture','domestic','commercial'))
+default 'commercial',
+puau100 numeric(6,2) not null check(puau100>=0),
+puau200 numeric(6,2) not null check(puau200>=0),
+puau400 numeric(6,2) not null check(puau400>=0),
+puaa400 numeric(6,2) not null check(puaa400>=0),
+mc numeric (5,2) not null check(mc>=0) ,
+taxp numeric (5,2)not null check (taxp >=0 and taxp <=99.99)
+
+)
+go
+
+select * from ebptbl
+go
+
+
+insert into ebptbl
+(ccname,puau100,puau200,puau400,puaa400,mc,taxp)
+values
+('agriculture',0.25,0.50,1.50,2.00,12.50,2.5),
+('domestic',0.50,1.00,3.00,6.00,25.00,5.0),
+('commercial',1.00,2.00,6.00,10.00,200.00,7.5)
+go
+select * from ebptbl;
+
+select * from ebptbl order by ccid;
+
+drop table if exists ebctbl
+go
+
+create table ebctbl
+(
+cid int identity (100,1)not null,
+ccname varchar(11)not null default 'commerial' references ebptbl,
+pread int not null check (pread >=0),
+cread int not null check (cread >=0),
+nread as (cread-pread),
+cuu100 int,
+cuau100 numeric(9,2),
+
+cuu200 int,
+cuau200 numeric(9,2),
+
+cuu400 int,
+cuau400 numeric(9,2),
+
+cua400 int,
+cuaa400 numeric(9,2),
+
+taxa numeric(9,2),
+npay numeric(14,2),
+constraint ckcncp check (cread >= pread)
+)
+go
+
+select * from ebctbl
+go
+
+select cid,nread,taxa,npay from ebctbl
+go
+
+insert into ebctbl
+(ccname,pread,cread)
+values
+('agriculture',0,50)
+go
+
+insert into ebctbl
+(ccname,pread,cread)
+values
+('domestic',0,50)
+go
+
+insert into ebctbl
+(ccname,pread,cread)
+values
+('commercial',0,50)
+go
+
+select * from ebctbl;
+
+drop trigger if exists trigns_ebctbl
+go
+create trigger trigns_ebctbl
+on ebctbl
+for insert 
+as
+begin
+
+set nocount on;
+
+declare @cid int=null;
+select @cid = i.cid from inserted i;
+drop table if exists tmptbl;
+
+declare @ccname varchar(11)=null;
+select @ccname = i.ccname from inserted i;
+
+select * into tmptbl from ebptbl where ccname =@ccname;
+
+declare @puau100 numeric(6,2)=0;
+select @puau100=puau100 from tmptbl;
+
+declare @puau200 numeric(6,2)=0;
+select @puau200=puau200 from tmptbl;
+
+declare @puau400 numeric(6,2)=0;
+select @puau400=puau400 from tmptbl;
+
+declare @puaa400 numeric(6,2)=0;
+select @puaa400=puau400 from tmptbl;
+
+declare @mc numeric(6,2)=0;
+select @mc=mc from tmptbl;
+
+declare @taxp numeric(5,2)=0;
+select @taxp=taxp from tmptbl;
+
+declare @nread int=0;
+select @nread= i.nread from inserted i;
+
+declare @cuu100 int=0;
+declare @cuau100 numeric (9,2)=0;
+
+declare @cuu200 int=0;
+declare @cuau200 numeric (9,2)=0;
+
+declare @cuu400 int=0;
+declare @cuau400 numeric (9,2)=0;
+
+declare @cua400 int=0;
+declare @cuaa400 numeric (9,2)=0;
+
+declare @taxa numeric (9,2)=0;
+declare @npay numeric (9,2)=0;
+
+if(@nread > 400)
+begin
+
+select @cuu100=100;
+select @cuu200=100;
+select @cuu400=200;
+select @cua400=(@nread -400);
+
+end
+
+else if(@nread >200)
+begin
+select @cuu100=100;
+select @cuu200=100;
+select @cuu400=(@nread -200);
+select @cua400=0;
+
+end
+
+
+else if(@nread >100)
+begin
+select @cuu100=100;
+select @cuu200=(@nread -100);
+select @cuu400=0;
+select @cua400=0;
+
+end
+
+select @cuau100=@cuu100 * @puau100;
+select @cuau200=@cuu200 * @puau200;
+select @cuau400=@cuu400 * @puau400;
+select @cuaa400=@cua400 * @puaa400;
+
+select @taxa = @cuaa400 * (@taxp/100);
+
+select @npay =@cuau100 + @cuau200 + @cuau400 + @cuaa400 +@mc +@taxa;
+
+update ebctbl  set
+
+cuu100= iif(@cuu100 > 0, @cuu100,null),
+cuau100=iif (@cuau100 >0, @cuau100,null),
+
+cuu200= iif(@cuu200 > 0, @cuu200,null),
+cuau200=iif (@cuau200 >0, @cuau200,null),
+
+cuu400= iif(@cuu400 > 0, @cuu400,null),
+cuau400=iif (@cuau400 >0, @cuau400,null),
+
+cua400= iif(@cua400 > 0, @cua400,null),
+cuaa400=iif (@cuaa400 >0, @cuaa400,null),
+
+taxa = iif (@taxa >0,@taxa,null),
+npay=@npay 
+where cid=@cid
+
+drop table if exists tmptbl;
+set nocount off;
+end
+go
+
+select * from ebctbl
+go
+ 
+insert into ebctbl (ccname,pread,cread) values ('agriculture',0,50);
+insert into ebctbl (ccname,pread,cread) values ('agriculture',0,150);
+insert into ebctbl (ccname,pread,cread) values ('agriculture',0,350);
+insert into ebctbl (ccname,pread,cread) values ('agriculture',0,550);
+go
+
+insert into ebctbl (ccname,pread,cread) values ('domestic',0,50);
+insert into ebctbl (ccname,pread,cread) values ('domestic',0,150);
+insert into ebctbl (ccname,pread,cread) values ('domestic',0,350);
+insert into ebctbl (ccname,pread,cread) values ('domestic',0,550);
+go
+
+insert into ebctbl (ccname,pread,cread) values ('commercial',0,50);
+insert into ebctbl (ccname,pread,cread) values ('commercial',0,150);
+insert into ebctbl (ccname,pread,cread) values ('commercial',0,350);
+insert into ebctbl (ccname,pread,cread) values ('commercial',0,550);
+go
+
+select * from ebctbl
+go
+
+select 
+c.cid,c.ccname,c.pread,c.nread,
+c.cuu100,p.puau100,c.cuau100,
+
+c.cuu200,iif (c.cuu200 >0,p.puau200,null) 'puau200',c.cuau200,
+c.cuu400,iif (c.cuu400 >0,p.puau400,null) 'puau400',c.cuau400,
+c.cua400,iif (c.cua400 >0,p.puaa400,null) 'puaa400',c.cuaa400,
+iif (c.cuaa400 > 0, p.taxp,null) 'taxp',iif (c.cuaa400 > 0, c.taxa,null) 'taxa',p.mc,c.npay
+from
+ebptbl p,ebctbl c
+where p.ccname=c.ccname;
+
+drop view if exists ebpcvw
+go
+
+CREATE VIEW ebpcvw
+as
+select 
+c.cid,c.ccname,c.pread,c.nread,
+c.cuu100,p.puau100,c.cuau100,
+
+c.cuu200,iif (c.cuu200 >0,p.puau200,null) 'puau200',c.cuau200,
+c.cuu400,iif (c.cuu400 >0,p.puau400,null) 'puau400',c.cuau400,
+c.cua400,iif (c.cua400 >0,p.puaa400,null) 'puaa400',c.cuaa400,
+iif (c.cuaa400 > 0, p.taxp,null) 'taxp',iif (c.cuaa400 > 0, c.taxa,null) 'taxa',p.mc,c.npay
+from
+ebptbl p,ebctbl c
+where p.ccname=c.ccname;
+
+go
+
+
+
+
+select * from ebpcvw;
